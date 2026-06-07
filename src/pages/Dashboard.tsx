@@ -1,11 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import type { DreamEntry, Mood } from '../types';
 import { MOOD_COLORS, MOOD_EMOJIS } from '../types';
 import { loadEntries } from '../store';
 
 export function Dashboard() {
-  const [entries, setEntries] = useState<DreamEntry[]>([]);
-  useEffect(() => { setEntries(loadEntries()); }, []);
+  const [entries] = useState<DreamEntry[]>(() => loadEntries());
+  const [now] = useState(Date.now);
 
   const themeFrequency = useMemo(() => {
     const freq: Record<string, number> = {};
@@ -25,7 +25,7 @@ export function Dashboard() {
   const calendarData = useMemo(() => {
     const days: { date: string; mood: Mood | null }[] = [];
     for (let i = 29; i >= 0; i--) {
-      const d = new Date();
+      const d = new Date(now);
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
       const dayEntries = entries.filter(e => e.date.split('T')[0] === dateStr);
@@ -35,7 +35,7 @@ export function Dashboard() {
       });
     }
     return days;
-  }, [entries]);
+  }, [entries, now]);
 
   // Insights
   const insights = useMemo(() => {
@@ -69,13 +69,13 @@ export function Dashboard() {
     // Average dreams per week
     if (entries.length >= 7) {
       const firstDate = new Date(entries[entries.length - 1].date);
-      const weeks = Math.max(1, (Date.now() - firstDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
+      const weeks = Math.max(1, (now - firstDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
       const perWeek = (entries.length / weeks).toFixed(1);
       result.push(`You record about ${perWeek} dreams per week`);
     }
 
     return result;
-  }, [entries, moodDistribution]);
+  }, [entries, moodDistribution, now]);
 
   if (entries.length === 0) {
     return (

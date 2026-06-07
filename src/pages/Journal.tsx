@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { DreamEntry } from '../types';
 import { MOOD_COLORS, MOOD_EMOJIS } from '../types';
 import { loadEntries, deleteEntry, getAudio } from '../store';
 
 export function Journal() {
-  const [entries, setEntries] = useState<DreamEntry[]>([]);
+  const [entries, setEntries] = useState<DreamEntry[]>(() => loadEntries());
   const [playingId, setPlayingId] = useState<string | null>(null);
-
-  useEffect(() => { setEntries(loadEntries()); }, []);
 
   const handleDelete = (id: string) => {
     if (confirm('Delete this dream?')) {
